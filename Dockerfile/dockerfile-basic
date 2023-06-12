@@ -1,0 +1,61 @@
+FROM ubuntu:20.04
+
+# build时关闭vpn，会避免一些错误
+# 但如果需要连接github的情况，可先关闭，第一遍生成缓存过后，在打开vpn连接github下载资源
+
+#使用root用户操作
+USER root
+
+# RUN mkdir /src
+# 更换阿里云源,在国内可以加快速度,如果是mit环境，建议使用官方源
+RUN sed -i "s/security.ubuntu.com/mirrors.aliyun.com/" /etc/apt/sources.list && \
+    sed -i "s/archive.ubuntu.com/mirrors.aliyun.com/" /etc/apt/sources.list && \
+    sed -i "s/security-cdn.ubuntu.com/mirrors.aliyun.com/" /etc/apt/sources.list
+RUN apt-get clean
+RUN apt-get update
+
+#添加用户
+RUN apt install -y sudo
+RUN groupadd -r docker && \ 
+    useradd -r -m -g docker --shell /bin/bash mit && \
+    echo 'root:root' | chpasswd   && \
+    echo 'mit:mit' | chpasswd   && \
+    echo "root ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
+    echo "mit ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers 
+
+# Adjust Timezone
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt install -y tzdata \
+    && ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+USER mit
+WORKDIR /home/mit
+
+# 安装基本工具
+RUN sudo apt update 
+RUN sudo DEBIAN_FRONTEND=noninteractive apt install -y build-essential \
+    vim \
+    curl \
+    git \
+    iputils-ping \
+    net-tools \
+    gdb
+
+#  安装 zsh，以后进入容器中时，更加方便地使用 shell
+RUN sudo apt install -y zsh \
+    && git clone https://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh \
+    && cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc \
+    && git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions \
+    && git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting \
+    && sed -i 's/^plugins=(/plugins=(zsh-autosuggestions zsh-syntax-highlighting z /' ~/.zshrc
+ 
+# %c为只显示当前所在目录。 %~为显示全路径，替换在将来版本可能存在问题，也可能不会，可查看文件中~的内容
+RUN sed -i 's/}%c/}%~/' ~/.oh-my-zsh/themes/robbyrussell.zsh-theme
+RUN sudo chsh -s /bin/zsh
+
+EXPOSE 3306 6379 8080 8090 8888 10010 10011 10012		
+ENTRYPOINT ["/bin/zsh"]
+
+#run启动命令
+# docker run -itd --user=mit --name=container_name -p 13000:3306 -p 13001:6379 -p 13002:8080 -p 13003:8090 -p 13004:8888 -p 13005:10010 -p 13006:10011 -p 13007:10012 ubuntutest
+
