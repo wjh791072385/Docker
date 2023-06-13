@@ -41,14 +41,14 @@ RUN sudo DEBIAN_FRONTEND=noninteractive apt install -y build-essential \
     net-tools \
     gdb
 
-#  安装 zsh，以后进入容器中时，更加方便地使用 shell
+# 安装 zsh，以后进入容器中时，更加方便地使用 shell
 RUN sudo apt install -y zsh \
     && git clone https://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh \
     && cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc \
     && git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions \
     && git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting \
     && sed -i 's/^plugins=(/plugins=(zsh-autosuggestions zsh-syntax-highlighting z /' ~/.zshrc
- 
+
 # %c为只显示当前所在目录。 %~为显示全路径，替换在将来版本可能存在问题，也可能不会，可查看文件中~的内容
 RUN sed -i 's/}%c/}%~/' ~/.oh-my-zsh/themes/robbyrussell.zsh-theme
 RUN sudo chsh -s /bin/zsh
@@ -56,6 +56,7 @@ RUN sudo chsh -s /bin/zsh
 EXPOSE 3306 6379 8080 8090 8888 10010 10011 10012		
 ENTRYPOINT ["/bin/zsh"]
 
-#run启动命令
-# docker run -itd --user=mit --name=container_name -p 13000:3306 -p 13001:6379 -p 13002:8080 -p 13003:8090 -p 13004:8888 -p 13005:10010 -p 13006:10011 -p 13007:10012 ubuntutest
+# run启动命令
+# docker run -itd --user=mit --cap-add=SYS_TIME --cap-add=SYS_PTRACE --name=container_name -p 13000:3306 
+# -p 13001:6379 -p 13002:8080 -p 13003:8090 -p 13004:8888 -p 13005:10010 -p 13006:10011 -p 13007:10012 image_name
 

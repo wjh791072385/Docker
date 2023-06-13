@@ -38,7 +38,8 @@ RUN sudo DEBIAN_FRONTEND=noninteractive apt install -y build-essential \
     git \
     iputils-ping \
     net-tools \
-    gdb
+    gdb \
+    cmake
 
 #  安装 zsh，以后进入容器中时，更加方便地使用 shell
 RUN sudo apt install -y zsh \
@@ -47,6 +48,7 @@ RUN sudo apt install -y zsh \
     && git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions \
     && git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting \
     && sed -i 's/^plugins=(/plugins=(zsh-autosuggestions zsh-syntax-highlighting z /' ~/.zshrc
+    
  
 # %c为只显示当前所在目录。 %~为显示全路径，替换在将来版本可能存在问题，也可能不会，可查看文件中~的内容
 RUN sed -i 's/}%c/}%~/' ~/.oh-my-zsh/themes/robbyrussell.zsh-theme
